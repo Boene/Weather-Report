@@ -1,0 +1,12 @@
+# venv
+.venv/
+
+# Py-Cache
+pycache/
+*.py[cod]
+
+# VS Code config
+.vscode/
+
+# data files
+data/
