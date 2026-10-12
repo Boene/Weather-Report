@@ -9,4 +9,4 @@ pycache/
 .vscode/
 
 # data files
-data/
+data/weather_data/
