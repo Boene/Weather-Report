@@ -3,4 +3,5 @@ from src.visualization import print_whole_map
 
 ### .\.venv\Scripts\python.exe main.py
 
-print_whole_map("France")
+print_whole_map("Germany")
+#get_and_save_to_all()

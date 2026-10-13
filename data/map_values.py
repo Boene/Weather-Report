@@ -21,6 +21,7 @@ city_coords = [
     ("Bielefeld",    52.0302,  8.5325),
     ("Bonn",         50.7374,  7.0982),
     ("Münster",      51.9607,  7.6261),
+    ("Erfurt",       50.9781, 11.0289)
 ]
 
 shown_cities = [
@@ -31,5 +32,18 @@ shown_cities = [
     "Frankfurt",
     "Stuttgart",
     "Dresden",
-    "Hannover"
+    "Hannover",
+    "Erfurt"
 ]
+
+notation_offset = {
+    "Berlin": (-38,8),
+    "Hamburg": (-47,8),
+    "München": (-47,8),
+    "Köln": (-30,8),
+    "Frankfurt": (-47,8),
+    "Stuttgart": (-45,8),
+    "Dresden": (-45,8),
+    "Hannover": (-45,8),
+    "Erfurt": (-36,8)
+}

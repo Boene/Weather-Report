@@ -1,7 +1,7 @@
 import geopandas as gpd # type: ignore
 import matplotlib.pyplot as plt
 from pathlib import Path
-from data.map_values import city_coords, shown_cities
+from data.map_values import city_coords, shown_cities, notation_offset
 from src.data_handler import return_latest_data
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,6 +24,7 @@ def print_city_and_temp(ax):
         if city not in shown_cities:
             continue
         data = return_latest_data(city)
+        x_offset, y_offset = notation_offset[city]              
         temperature = data["temperature_2m"]
         ax.scatter(
             longitude,
@@ -35,7 +36,7 @@ def print_city_and_temp(ax):
         ax.annotate(
             f"{city}: {temperature:.1f} °C",
             xy=(longitude, latitude),
-            xytext=(5, 5),
+            xytext=(x_offset, y_offset),
             textcoords="offset points",
             fontsize=11,
             zorder=3
