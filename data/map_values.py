@@ -22,3 +22,14 @@ city_coords = [
     ("Bonn",         50.7374,  7.0982),
     ("Münster",      51.9607,  7.6261),
 ]
+
+shown_cities = [
+    "Berlin",
+    "Hamburg",
+    "München",
+    "Köln",
+    "Frankfurt",
+    "Stuttgart",
+    "Dresden",
+    "Hannover"
+]
