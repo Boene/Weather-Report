@@ -1,12 +1,23 @@
 import geopandas as gpd # type: ignore
 import matplotlib.pyplot as plt
+import numpy as np
+from shapely.geometry import Point
 from pathlib import Path
 from data.map_values import city_coords, shown_cities, notation_offset
 from src.data_handler import return_latest_data
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-def print_country(country: str, ax, transform_to_m: bool = False):
+def test_create_country(country: str, transform_to_m: bool = True):
+    world = gpd.read_file(
+        BASE_DIR / "data" / "country_shapes" / "ne_110m_admin_0_countries.shp"
+    )
+    ctry = world[world["ADMIN"] == country]
+    if transform_to_m:
+        ctry = ctry.to_crs("EPSG:25832")
+    return ctry
+
+def print_country(country: str, ax, transform_to_m: bool = True):
     world = gpd.read_file(
         BASE_DIR / "data" / "country_shapes" / "ne_110m_admin_0_countries.shp"
     )
@@ -20,7 +31,7 @@ def print_country(country: str, ax, transform_to_m: bool = False):
     )
     return ctry
 
-def print_city_and_temp(ax, transform_to_m: bool = False):
+def print_city_and_temp(ax, transform_to_m: bool = True):
     cities_to_draw = []
 
     for city, latitude, longitude in city_coords:
@@ -68,11 +79,14 @@ def print_city_and_temp(ax, transform_to_m: bool = False):
             zorder=3
         )
 
-def print_whole_map(country: str, transform_to_m: bool = False):
+def print_whole_map(country: str, transform_to_m: bool = True, spacing: int = 50000, buffer: int = 50000):
     fig, ax = plt.subplots(figsize=(8, 10))
-    geometry = print_country(country, ax, transform_to_m)
+    ctry = print_country(country, ax, transform_to_m)
+    grid = create_grid(ctry, spacing, buffer)
+    print_grid(grid, ax)
     print_city_and_temp(ax, transform_to_m)
-    min_x, min_y, max_x, max_y = geometry.total_bounds
+    
+    min_x, min_y, max_x, max_y = ctry.total_bounds
     if transform_to_m:
         margin = 10_000
         ax.set_aspect("equal")
@@ -84,3 +98,44 @@ def print_whole_map(country: str, transform_to_m: bool = False):
     ax.set_axis_off()
     plt.title("Aktuelle Temperaturen in Deutschland")
     plt.show()
+
+def create_grid(country, spacing: int = 50000, buffer: int = 50000):
+    # Combines all possibly seperate areas of the countrys geometry (ie islands)
+    country_geometry = country.geometry.union_all()
+
+    min_x, min_y, max_x, max_y = country_geometry.bounds
+    min_x, min_y = min_x - buffer, min_y - buffer
+    max_x, max_y = max_x + buffer, max_y + buffer
+
+    x_values = np.arange(min_x, max_x + spacing, spacing)
+    y_values = np.arange(min_y, max_y + spacing, spacing)
+
+    points = [
+        Point(x, y)
+        for x in x_values
+        for y in y_values
+    ]
+
+    grid = gpd.GeoDataFrame(
+        geometry=points,
+        crs=country.crs
+    )
+
+    grid["inside_country"] = grid.geometry.within(
+        country_geometry
+    )
+
+    return grid
+
+def print_grid(grid, ax):
+    grid[grid["inside_country"]].plot(
+        ax=ax,
+        color="red",
+        markersize=8
+    )
+
+    grid[~grid["inside_country"]].plot(
+        ax=ax,
+        color="blue",
+        markersize=8
+    )
