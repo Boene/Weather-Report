@@ -73,10 +73,14 @@ def print_whole_map(country: str, transform_to_m: bool = False):
     geometry = print_country(country, ax, transform_to_m)
     print_city_and_temp(ax, transform_to_m)
     min_x, min_y, max_x, max_y = geometry.total_bounds
-    margin = 10_000
+    if transform_to_m:
+        margin = 10_000
+        ax.set_aspect("equal")
+    else:
+        margin = 0.01
     ax.set_xlim(min_x - margin, max_x + margin)
     ax.set_ylim(min_y - margin, max_y + margin)
-    ax.set_aspect("equal")
+
     ax.set_axis_off()
     plt.title("Aktuelle Temperaturen in Deutschland")
     plt.show()
