@@ -21,35 +21,62 @@ def print_country(country: str, ax, transform_to_m: bool = False):
     return ctry
 
 def print_city_and_temp(ax, transform_to_m: bool = False):
+    cities_to_draw = []
+
     for city, latitude, longitude in city_coords:
         if city not in shown_cities:
             continue
         data = return_latest_data(city)
-        x_offset, y_offset = notation_offset[city]              
-        temperature = data["temperature_2m"]
+        cities_to_draw.append({
+            "city": city,
+            "latitude": latitude,
+            "longitude": longitude,
+            "temperature": data["temperature_2m"]
+        })
+
+    points = gpd.GeoDataFrame(
+        cities_to_draw,
+        geometry=gpd.points_from_xy(
+            [city["longitude"] for city in cities_to_draw],
+            [city["latitude"] for city in cities_to_draw]
+        ),
+        crs="EPSG:4326"
+    )
+
+    if transform_to_m:
+        points = points.to_crs("EPSG:25832")
+    
+    for _, city in points.iterrows():
+        x = city.geometry.x
+        y = city.geometry.y
+        name = city["city"]
+        temperature = city["temperature"]
+        x_offset, y_offset = notation_offset[name]              
         ax.scatter(
-            longitude,
-            latitude,
+            x,
+            y,
             color="red",
             s=20,
             zorder=2
         )
         ax.annotate(
-            f"{city}: {temperature:.1f} °C",
-            xy=(longitude, latitude),
+            f"{name}: {temperature:.1f} °C",
+            xy=(x, y),
             xytext=(x_offset, y_offset),
             textcoords="offset points",
             fontsize=11,
             zorder=3
         )
 
-def print_whole_map(country: str):
+def print_whole_map(country: str, transform_to_m: bool = False):
     fig, ax = plt.subplots(figsize=(8, 10))
-    print_country(country, ax)
-    print_city_and_temp(ax)
-    ax.set_xlim(5.5, 15.5)
-    ax.set_ylim(47, 55.5)
+    geometry = print_country(country, ax, transform_to_m)
+    print_city_and_temp(ax, transform_to_m)
+    min_x, min_y, max_x, max_y = geometry.total_bounds
+    margin = 10_000
+    ax.set_xlim(min_x - margin, max_x + margin)
+    ax.set_ylim(min_y - margin, max_y + margin)
+    ax.set_aspect("equal")
     ax.set_axis_off()
     plt.title("Aktuelle Temperaturen in Deutschland")
-    plt.tight_layout()
     plt.show()
