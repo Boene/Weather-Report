@@ -6,20 +6,21 @@ from src.data_handler import return_latest_data
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-def print_country(country: str, ax):
+def print_country(country: str, ax, transform_to_m: bool = False):
     world = gpd.read_file(
         BASE_DIR / "data" / "country_shapes" / "ne_110m_admin_0_countries.shp"
     )
     ctry = world[world["ADMIN"] == country]
-
+    if transform_to_m:
+        ctry = ctry.to_crs("EPSG:25832")
     ctry.plot(
         ax=ax,
         edgecolor="black",
         facecolor="whitesmoke"
     )
-    #plt.title(country)
-    
-def print_city_and_temp(ax):
+    return ctry
+
+def print_city_and_temp(ax, transform_to_m: bool = False):
     for city, latitude, longitude in city_coords:
         if city not in shown_cities:
             continue

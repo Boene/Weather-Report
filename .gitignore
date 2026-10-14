@@ -10,3 +10,6 @@ pycache/
 
 # data files
 data/weather_data/
+
+# misc
+*to_do*

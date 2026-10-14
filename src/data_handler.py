@@ -29,7 +29,14 @@ def append_to_all(data: dict, city: str):
         tzinfo=ZoneInfo(data["timezone"])
     ).isoformat(timespec="seconds")
 
-    formatted_data = {"city": city, "time_retrieval": retrieved_at, "weather_time": weather_time, "temperature_2m": data["current"]["temperature_2m"]}
+    formatted_data = {
+        "city": city, 
+        "latitude": data["latitude"],
+        "longitude": data["longitude"],
+        "time_retrieval": retrieved_at, 
+        "weather_time": weather_time, 
+        "temperature_2m": data["current"]["temperature_2m"]
+    }
     with open(ALL_DIR, "a", encoding="utf-8") as datei:
         datei.write(json.dumps(formatted_data, ensure_ascii=False) + "\n")
 
@@ -95,6 +102,5 @@ def return_latest_data(city):
                 }
     if latest is None:
         raise LookupError(f"No data for {city}.")
-    else:
-        latest["weather_time"] = latest["weather_time"].isoformat(timespec="seconds")
+    latest["weather_time"] = latest["weather_time"].isoformat(timespec="seconds")
     return latest
