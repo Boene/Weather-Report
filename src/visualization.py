@@ -1,10 +1,11 @@
 import geopandas as gpd # type: ignore
 import matplotlib.pyplot as plt
 import numpy as np
-from shapely.geometry import Point
+from shapely.geometry import Point # type: ignore
 from pathlib import Path
 from data.map_values import city_coords, shown_cities, notation_offset
 from src.data_handler import return_latest_data
+from src.grid_handler import create_grid
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -79,6 +80,20 @@ def print_city_and_temp(ax, transform_to_m: bool = True):
             zorder=3
         )
 
+
+def print_grid(grid, ax):
+    grid[grid["inside_country"]].plot(
+        ax=ax,
+        color="red",
+        markersize=8
+    )
+
+    grid[~grid["inside_country"]].plot(
+        ax=ax,
+        color="blue",
+        markersize=8
+    )
+
 def print_whole_map(country: str, transform_to_m: bool = True, spacing: int = 50000, buffer: int = 50000):
     fig, ax = plt.subplots(figsize=(8, 10))
     ctry = print_country(country, ax, transform_to_m)
@@ -98,44 +113,3 @@ def print_whole_map(country: str, transform_to_m: bool = True, spacing: int = 50
     ax.set_axis_off()
     plt.title("Aktuelle Temperaturen in Deutschland")
     plt.show()
-
-def create_grid(country, spacing: int = 50000, buffer: int = 50000):
-    # Combines all possibly seperate areas of the countrys geometry (ie islands)
-    country_geometry = country.geometry.union_all()
-
-    min_x, min_y, max_x, max_y = country_geometry.bounds
-    min_x, min_y = min_x - buffer, min_y - buffer
-    max_x, max_y = max_x + buffer, max_y + buffer
-
-    x_values = np.arange(min_x, max_x + spacing, spacing)
-    y_values = np.arange(min_y, max_y + spacing, spacing)
-
-    points = [
-        Point(x, y)
-        for x in x_values
-        for y in y_values
-    ]
-
-    grid = gpd.GeoDataFrame(
-        geometry=points,
-        crs=country.crs
-    )
-
-    grid["inside_country"] = grid.geometry.within(
-        country_geometry
-    )
-
-    return grid
-
-def print_grid(grid, ax):
-    grid[grid["inside_country"]].plot(
-        ax=ax,
-        color="red",
-        markersize=8
-    )
-
-    grid[~grid["inside_country"]].plot(
-        ax=ax,
-        color="blue",
-        markersize=8
-    )

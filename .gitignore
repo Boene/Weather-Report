@@ -10,6 +10,7 @@ pycache/
 
 # data files
 data/weather_data/
+data/grid/
 
 # misc
 *to_do*
