@@ -3,8 +3,8 @@ from src.visualization import print_whole_map, print_country, test_create_countr
 
 ### .\.venv\Scripts\python.exe main.py
 
-#print_whole_map("Germany", spacing=30000, buffer=30000)
+print_whole_map("Germany", spacing=30000, buffer=30000)
 #get_and_save_to_all()
 #ger = test_create_country("Germany", transform_to_m=True)
 #grid = create_grid(ger)
-get_and_save_recent_grid()
+#get_and_save_recent_grid()
