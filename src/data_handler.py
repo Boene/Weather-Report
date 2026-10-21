@@ -93,30 +93,26 @@ def get_and_save_to_all():
 
 def get_and_save_recent_grid():
     url = "https://api.open-meteo.com/v1/forecast"
-    batch_size = 10
+    batch_size = 20
 
+    ### Create Grid
     world = gpd.read_file( ### notwendig?
         BASE_DIR / "data" / "country_shapes"
         / "ne_110m_admin_0_countries.shp"
     )
     germany = world[world["ADMIN"] == "Germany"].to_crs("EPSG:25832")
     grid = create_grid(germany) ### more parameters?
+    
+    ### Prepare Coordinates for API
     grid_api = grid.to_crs("EPSG:4326")
     latitudes = grid_api.geometry.y.tolist()
     longitudes = grid_api.geometry.x.tolist()
-    params = {
-        "latitude": latitudes,
-        "longitude": longitudes,
-        "current": "temperature_2m",
-        "timezone": "Europe/Berlin"
-    }
-    data = get_data(url, params)
-    if isinstance(data, dict):
-        data = [data]
+
     records = []
     retrieved_at = datetime.now(
         ZoneInfo("Europe/Berlin")
     ).isoformat(timespec="seconds")
+
     for start in range(0, len(grid), batch_size):
         end = min(start + batch_size, len(grid))
 
@@ -131,18 +127,18 @@ def get_and_save_recent_grid():
             "timezone": "Europe/Berlin"
         }
 
+        ### Check and process answer
         data = get_data(url, params)
-
-        # Einzelstandort-Antwort in eine Liste umwandeln
+        # In case of the answer only containing 1 place, its not within a list, which is necessary later on.
         if isinstance(data, dict):
             data = [data]
-
         if len(data) != end - start:
             raise ValueError(
                 f"Erwartet: {end - start} Standorte, "
                 f"erhalten: {len(data)}"
             )
 
+        ### Save API's answer
         for offset, location_data in enumerate(data):
             index = start + offset
 
