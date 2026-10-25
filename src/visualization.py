@@ -26,7 +26,7 @@ def print_grid_temperatures(ax):
     with grid_path.open("r", encoding="utf-8") as file:
         records = json.load(file)
 
-    ### Only choose grid points that lie in Germany
+    ### Only choose grid points that lie within Germany
     records = [
         record for record in records
         if record["inside_country"]
@@ -44,7 +44,7 @@ def print_grid_temperatures(ax):
 
     ### Apply color spectrum representing temperature
     temperatures = grid_data["temperature_2m"]
-    # Temperatures outside the given range are shown as the corresponding border
+    # Temperatures outside the given range are shown as the corresponding limiting color
     norm = Normalize(vmin=-12, vmax=32)
     cmap = plt.get_cmap("coolwarm")
 
@@ -142,7 +142,7 @@ def print_grid(grid, ax):
         markersize=8
     )
 
-def print_whole_map(country: str, transform_to_m: bool = True, spacing: int = 50000, buffer: int = 50000):
+def print_whole_map(country: str = "Germany", transform_to_m: bool = True, spacing: int = 50000, buffer: int = 50000):
     fig, ax = plt.subplots(figsize=(8, 10))
     ctry = print_country(country, ax, transform_to_m)
     #grid = create_grid(ctry, spacing, buffer)

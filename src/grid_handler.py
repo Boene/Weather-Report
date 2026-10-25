@@ -3,7 +3,7 @@ import numpy as np
 from shapely.geometry import Point # type: ignore
 
 def create_grid(country, spacing: int = 50000, buffer: int = 50000):
-    # Combines all possibly seperate areas of the countrys geometry (ie islands)
+    # Combines all possibly seperate areas of the countrys geometry (i.e. islands)
     country_geometry = country.geometry.union_all()
 
     min_x, min_y, max_x, max_y = country_geometry.bounds

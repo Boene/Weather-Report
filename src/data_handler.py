@@ -91,7 +91,7 @@ def get_and_save_to_all():
 
 ### Query the API, create grid, catch data for all its points and save data in grid_recent.jsonl
 
-def get_and_save_recent_grid():
+def get_and_save_recent_grid(country: str = "Germany"):
     url = "https://api.open-meteo.com/v1/forecast"
     batch_size = 20
 
@@ -100,8 +100,8 @@ def get_and_save_recent_grid():
         BASE_DIR / "data" / "country_shapes"
         / "ne_110m_admin_0_countries.shp"
     )
-    germany = world[world["ADMIN"] == "Germany"].to_crs("EPSG:25832")
-    grid = create_grid(germany) ### more parameters?
+    ctry = world[world["ADMIN"] == country].to_crs("EPSG:25832")
+    grid = create_grid(ctry) ### more parameters?
     
     ### Prepare Coordinates for API
     grid_api = grid.to_crs("EPSG:4326")
