@@ -1,8 +1,23 @@
 # Projekt: Wetterkarte Deutschland
 
-### Über Open-Meteo.com werden Wetterdaten abgefragt, gespeichert und angezeigt. Die Temperaturwerte werden erstens für mehrere große Städte und zweitens für alle Punkte eines frei konfigurierbaren Gitters heruntergeladen. Für die Städte werden jeweils Name und Termperatur angezeigt. Die Werte des Gitters werden zur räumlichen Inter- und zeitlichen Extrapolation genutzt. So wird [zukünftig (Stand 25.10.26)] eine, per Farbskala kenntliche gemachte, Flächendarstellung erstellt und eine, per ML generierte, Vorhersage gebildet.
+### Über Open-Meteo.com werden Wetterdaten abgefragt, gespeichert und angezeigt. Die Temperaturwerte werden erstens für mehrere große Städte und zweitens für alle Punkte eines frei konfigurierbaren Gitters heruntergeladen. Für die Städte werden jeweils Name und Temperatur angezeigt. Die Werte des Gitters werden zur räumlichen Inter- und zeitlichen Extrapolation genutzt. So wird [zukünftig (Stand 25.10.26)] eine, per Farbskala kenntlich gemachte, Flächendarstellung erstellt und eine, per ML generierte, Vorhersage gebildet.
 
 <br>
+
+## Aktueller Stand:
+### Bereits umgesetzt: 
+   - Abruf von Wetterdaten
+   - Erzeugung des Gitternetzes
+   - Darstellung der Temperatur
+
+### In Arbeit:
+   - dauerhafte Speicherung der Gitterwerte
+   - flächige Visualisierung
+
+### In Planung:
+   - Interpolation der Gitterwerte
+   - ML-basierte Vorhersage von Wetterdaten
+
 
 ## Anforderungen: 
 - Python 3.13.15
@@ -29,7 +44,7 @@ python -m venv .venv
 - "spacing" in create_grid() bestimmt den Abstand zwischen 2 benachbarten Gitterpunkten in m.
 - "vmin" und "vmax" in print_grid_temperatures() regeln den Minimal- und Maximalwert der genutzten Farbskala. Werte außerhalb des Bereichs werden in der Farbe des entsprechenden Grenzwerts angezeigt.
 
-### Es gibt noch weitere Parameter, die im Code genutzt werden. Diese sollen im weiteren Verlauf noch sauberer verarbeitet und kohährenter eingebunden werden. Sie zu ändern, führt aktuell vermutlich schnell dazu, daß das Programm nicht startet.
+### Es gibt noch weitere Parameter, die im Code genutzt werden. Diese sollen im weiteren Verlauf noch sauberer verarbeitet und kohärenter eingebunden werden. Sie zu ändern, führt aktuell vermutlich schnell dazu, daß das Programm nicht startet.
 
 ## Mögliche zukünftige Erweiterungen sind: 
 - Vorhersage basierend auf vorliegenden Daten (bereits in Planung)
