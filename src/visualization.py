@@ -4,8 +4,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import Point # type: ignore
 from pathlib import Path
+from scipy.interpolate import griddata
 from matplotlib.colors import Normalize
 from matplotlib.cm import ScalarMappable
+from shapely import contains_xy # type: ignore
 from data.map_values import city_coords, shown_cities, notation_offset
 from src.data_handler import return_latest_data
 from src.grid_handler import create_grid
@@ -142,11 +144,105 @@ def print_grid(grid, ax):
         markersize=8
     )
 
+def print_grid_temperature_area(ax, country):
+    # Loading temperature data
+    grid_path = BASE_DIR / "data" / "grid" / "grid_recent.jsonl"
+    with grid_path.open("r", encoding="utf-8") as file:
+        records = json.load(file)
+
+    # Loading Germanys geo-data 
+    world = gpd.read_file(BASE_DIR / "data" / "country_shapes" / "ne_110m_admin_0_countries.shp")
+    country_data = world[world["ADMIN"] == country].to_crs("EPSG:25832")
+    country_geometry = country_data.geometry.union_all()
+
+    # Convert points on grid in a GeoDataFrame
+    grid_data = gpd.GeoDataFrame(
+        records,
+        geometry=gpd.points_from_xy(
+            [r["longitude"] for r in records],
+            [r["latitude"] for r in records]
+        ),
+        crs="EPSG:4326"
+    ).to_crs("EPSG:25832")
+
+    # Extract coordinates amd temperatures
+    points = np.column_stack((
+        grid_data.geometry.x,
+        grid_data.geometry.y
+    ))
+    temperatures = grid_data["temperature_2m"].to_numpy()
+
+    # Boundaries of the country
+    min_x, min_y, max_x, max_y = country_geometry.bounds
+
+    # Create denser grid
+    x = np.linspace(min_x, max_x, 200)
+    y = np.linspace(min_y, max_y, 200)
+
+    grid_x, grid_y = np.meshgrid(x, y)
+
+    # Interpolate temperature
+    grid_temp = griddata(
+        points,
+        temperatures,
+        (grid_x, grid_y),
+        method="linear"
+    )
+
+    # Hide points outside of country
+    inside_country = contains_xy(
+        country_geometry,
+        grid_x,
+        grid_y
+    )
+
+    grid_temp[~inside_country] = np.nan
+
+    # Draw temperature as area
+    levels = np.arange(2, 14, 0.5)
+
+    contours = ax.contourf(
+        grid_x,
+        grid_y,
+        grid_temp,
+        levels=levels,
+        cmap="coolwarm",
+        extend="both"
+    )
+
+    ax.scatter(
+        points[:, 0],
+        points[:, 1],
+        c=temperatures,
+        cmap="coolwarm",
+        vmin=2,
+        vmax=14,
+        edgecolors="black",
+        s=15,
+        zorder=4
+    )
+
+    # Add color scale
+    ax.figure.colorbar(
+        contours,
+        ax=ax,
+        label="Temperatur (°C)",
+        shrink=0.7
+    )
+    # Draw boundary of country
+    country_data.boundary.plot(
+        ax=ax,
+        color="black",
+        linewidth=0.8,
+        zorder=3
+    )
+
+
 def print_whole_map(country: str = "Germany", transform_to_m: bool = True, spacing: int = 50000, buffer: int = 50000):
     fig, ax = plt.subplots(figsize=(8, 10))
     ctry = print_country(country, ax, transform_to_m)
     #grid = create_grid(ctry, spacing, buffer)
-    print_grid_temperatures(ax)
+    print_grid_temperature_area(ax, country)
     print_city_and_temp(ax, transform_to_m)
     
     min_x, min_y, max_x, max_y = ctry.total_bounds

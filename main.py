@@ -2,4 +2,6 @@ from src.data_handler import get_and_save_to_recent, get_and_save_to_all, load_r
 from src.visualization import print_whole_map, print_country, test_create_country, create_grid
 
 get_and_save_recent_grid()
+get_and_save_to_recent()
+get_and_save_to_all()
 print_whole_map(spacing=30000, buffer=30000)
