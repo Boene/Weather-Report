@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import Point # type: ignore
 from pathlib import Path
-from scipy.interpolate import griddata
+
 from matplotlib.colors import Normalize
 from matplotlib.cm import ScalarMappable
 from shapely import contains_xy # type: ignore
 from data.map_values import city_coords, shown_cities, notation_offset
 from src.data_handler import return_latest_data
-from src.grid_handler import create_grid, prepare_grid_data, load_grid_data
+from src.grid_handler import create_grid, prepare_grid_data, load_grid_data, interpolate_grid_data
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -150,13 +150,6 @@ def print_grid_temperature_area(ax, country):
     country_data = world[world["ADMIN"] == country].to_crs("EPSG:25832")
     country_geometry = country_data.geometry.union_all()
 
-    # Extract coordinates amd temperatures
-    points = np.column_stack((
-        grid_data.geometry.x,
-        grid_data.geometry.y
-    ))
-    temperatures = grid_data["temperature_2m"].to_numpy()
-
     # Boundaries of the country
     min_x, min_y, max_x, max_y = country_geometry.bounds
 
@@ -166,13 +159,16 @@ def print_grid_temperature_area(ax, country):
 
     grid_x, grid_y = np.meshgrid(x, y)
 
-    # Interpolate temperature
-    grid_temp = griddata(
-        points,
-        temperatures,
-        (grid_x, grid_y),
-        method="cubic"
-    )
+    # Extract coordinates amd temperatures
+    points = np.column_stack((
+        grid_data.geometry.x,
+        grid_data.geometry.y
+    ))
+    temperatures = grid_data["temperature_2m"].to_numpy()
+
+    ### Create interpolated grid data
+
+    grid_temp = interpolate_grid_data(points, temperatures, grid_x, grid_y)
 
     # Hide points outside of country
     inside_country = contains_xy(
