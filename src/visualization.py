@@ -10,7 +10,7 @@ from matplotlib.cm import ScalarMappable
 from shapely import contains_xy # type: ignore
 from data.map_values import city_coords, shown_cities, notation_offset
 from src.data_handler import return_latest_data
-from src.grid_handler import create_grid
+from src.grid_handler import create_grid, prepare_grid_data, load_grid_data
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,9 +24,7 @@ def test_create_country(country: str, transform_to_m: bool = True):
     return ctry
 
 def print_grid_temperatures(ax):
-    grid_path = BASE_DIR / "data" / "grid" / "grid_recent.jsonl"
-    with grid_path.open("r", encoding="utf-8") as file:
-        records = json.load(file)
+    records = load_grid_data() 
 
     ### Only choose grid points that lie within Germany
     records = [
@@ -145,25 +143,12 @@ def print_grid(grid, ax):
     )
 
 def print_grid_temperature_area(ax, country):
-    # Loading temperature data
-    grid_path = BASE_DIR / "data" / "grid" / "grid_recent.jsonl"
-    with grid_path.open("r", encoding="utf-8") as file:
-        records = json.load(file)
+    grid_data = prepare_grid_data()
 
     # Loading Germanys geo-data 
     world = gpd.read_file(BASE_DIR / "data" / "country_shapes" / "ne_110m_admin_0_countries.shp")
     country_data = world[world["ADMIN"] == country].to_crs("EPSG:25832")
     country_geometry = country_data.geometry.union_all()
-
-    # Convert points on grid in a GeoDataFrame
-    grid_data = gpd.GeoDataFrame(
-        records,
-        geometry=gpd.points_from_xy(
-            [r["longitude"] for r in records],
-            [r["latitude"] for r in records]
-        ),
-        crs="EPSG:4326"
-    ).to_crs("EPSG:25832")
 
     # Extract coordinates amd temperatures
     points = np.column_stack((
@@ -176,8 +161,8 @@ def print_grid_temperature_area(ax, country):
     min_x, min_y, max_x, max_y = country_geometry.bounds
 
     # Create denser grid
-    x = np.linspace(min_x, max_x, 200)
-    y = np.linspace(min_y, max_y, 200)
+    x = np.linspace(min_x, max_x, 600)
+    y = np.linspace(min_y, max_y, 600)
 
     grid_x, grid_y = np.meshgrid(x, y)
 
@@ -186,7 +171,7 @@ def print_grid_temperature_area(ax, country):
         points,
         temperatures,
         (grid_x, grid_y),
-        method="linear"
+        method="cubic"
     )
 
     # Hide points outside of country
@@ -207,6 +192,8 @@ def print_grid_temperature_area(ax, country):
         grid_temp,
         levels=levels,
         cmap="coolwarm",
+        vmin=2,
+        vmax=14,
         extend="both"
     )
 

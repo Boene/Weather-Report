@@ -96,12 +96,12 @@ def get_and_save_recent_grid(country: str = "Germany"):
     batch_size = 20
 
     ### Create Grid
-    world = gpd.read_file( ### notwendig?
+    world = gpd.read_file(
         BASE_DIR / "data" / "country_shapes"
         / "ne_110m_admin_0_countries.shp"
     )
     ctry = world[world["ADMIN"] == country].to_crs("EPSG:25832")
-    grid = create_grid(ctry) ### more parameters?
+    grid = create_grid(ctry)
     
     ### Prepare Coordinates for API
     grid_api = grid.to_crs("EPSG:4326")
